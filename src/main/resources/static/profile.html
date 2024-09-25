@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Resumes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <link rel="icon" href="logo.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            height: 100vh;
+            background: rgb(249, 249, 249);
+            background: radial-gradient(circle, rgba(249, 249, 249, 1) 0%, rgb(228, 226, 202) 49%, rgb(236, 236, 230) 100%);
+
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* خلفية داكنة مع شفاف */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            /* وضعه فوق المحتوى */
+        }
+        .loader-none{
+            display: none !important;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            /* لون الخلفية للـ Loader */
+            border-top: 8px solid #3498db;
+            /* لون القمة للـ Loader */
+            border-radius: 50%;
+            /* شكل دائري */
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            /* تحريك الـ Loader */
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="overlay loader-none">
+    <div class="loader"></div>
+</div>
+    <nav class="navbar bg-body-tertiary shadow">
+        <div class="container">
+            <a class="navbar-brand" href="myTasks.html">
+                <img src="logo.png" alt="Logo" height="24" class="d-inline-block align-text-top">
+                Task Management
+            </a>
+            <div>
+                <button class="myprofile btn btn-sm btn-dark"><i class="bi bi-person-circle"></i> My Profile</button>
+                <button class="logout btn btn-sm btn-danger"><i class="bi bi-box-arrow-left"></i> Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="bg-white rounded shadow p-2 mt-4">
+            <div class="d-flex justify-content-between border-bottom">
+                <h5>Edit Profile</h5>
+                <div>
+                    <a href="myTasks.html" class="text-decoration-none"><i class="bi bi-arrow-left-circle"></i> Back</a>
+                </div>
+            </div>
+
+            <div>
+
+                <form class="profile row g-3 p-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" placeholder="Dev Ninja" class="fullName form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" placeholder="dev@abc.com" class="email form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">New Password</label>
+                        <input type="password"
+                            class="password form-control">
+                    </div>
+
+
+
+
+                    <div class="col-12 text-end">
+                        <button type="submit" class="updateProfile btn btn-primary"><i class="bi bi-floppy"></i> Update
+                            Profile</button>
+                    </div>
+                </form>
+            </div>
+
+
+
+
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+        <script>
+            const myprofile=document.querySelector(".myprofile");
+            myprofile.onclick=function(e){
+                 localStorage.setItem('autoClick', 'true');
+                 location.reload();
+            }
+            const logoutBtn=document.querySelector(".logout");
+            logoutBtn.onclick=async function (e) {
+                const overlay = document.querySelector(".overlay");
+                overlay.classList.remove("loader-none");
+                try {
+                    const response = await axios.post("http://localhost:8080/api/user/logout", {}, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        withCredentials: true //
+                    });
+                    if (response.status === 200) {
+                        Swal.fire({
+                            title: "User Logout Successfully!",
+                            text: response.data,
+                            icon: "success"
+                        }).then(() => {
+                            location.href = "login.html";
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Logout Failed",
+                            text: response.data,
+                            icon: "error"
+                        });
+                    }
+                } catch (error) {
+                    let errorMessage = 'An error occurred. Please try again.';
+                    if (error.response) {
+                        if (error.response.data) {
+                            errorMessage = error.response.data;
+                        }
+                    } else if (error.request) {
+                        errorMessage = 'No response from server. Please check your network connection.';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                    document.getElementById('error-message').innerText = errorMessage;
+                }finally {
+                    console.log("Finally block executed");
+                    overlay.classList.add("loader-none");
+                }
+
+            };
+           async function getData() {
+                const overlay = document.querySelector(".overlay");
+                overlay.classList.remove("loader-none");
+                try {
+                    const {data} = await axios.get('http://localhost:8080/api/user/information');
+
+                    const fullName = document.querySelector(".fullName");
+                    console.log(fullName);
+                    fullName.setAttribute("value", data.fullName);
+                    const email = document.querySelector(".email");
+                    email.setAttribute("value", data.email);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    console.log("Finally block executed");
+                    overlay.classList.add("loader-none");
+                }
+            }
+            getData();
+            const updateProfileForm=document.querySelector(".profile");
+            console.log(updateProfileForm);
+            updateProfileForm.onsubmit=async function (e){
+                e.stopPropagation();
+                e.preventDefault();
+                let elements = e.target.elements;
+                let userDto={
+                    fullName:elements[0].value,
+                    email:elements[1].value,
+                    password:elements[2].value
+                };
+                console.log(userDto);
+                const overlay = document.querySelector(".overlay");
+                overlay.classList.remove("loader-none");
+                try {
+                    const response=await axios.post('http://localhost:8080/api/user/updateUser',userDto);
+                    if (response.status === 200) {
+                        Swal.fire({
+                            title: "Success",
+                            text: response.data,
+                            icon: "success"
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: "Failed to update user",
+                            icon: "error"
+                        });
+                    }
+                }catch (error){
+                    console.error("There was an error updating the user!", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: error.response ? error.response.data : error.message,
+                        icon: "error"
+                    });
+                }finally {
+                    console.log("Finally block executed");
+                    overlay.classList.add("loader-none");
+                }
+            }
+        </script>
+</body>
+
+</html>

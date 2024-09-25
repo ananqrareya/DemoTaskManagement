@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LitsTasks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <link rel="icon" href="logo.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            height: 100vh;
+            background: rgb(249, 249, 249);
+            background: radial-gradient(circle, rgba(249, 249, 249, 1) 0%, rgb(228, 226, 202) 49%, rgb(236, 236, 230) 100%);
+
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* خلفية داكنة مع شفاف */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            /* وضعه فوق المحتوى */
+        }
+        .loader-none{
+            display: none !important;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            /* لون الخلفية للـ Loader */
+            border-top: 8px solid #3498db;
+            /* لون القمة للـ Loader */
+            border-radius: 50%;
+            /* شكل دائري */
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            /* تحريك الـ Loader */
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .category-item {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #0c5460;
+            border-radius: .25rem;
+            margin-bottom: .5rem;
+        }
+
+        .task-item {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #721c24;
+            border-radius: .25rem;
+            margin-bottom: .5rem;
+        }
+    </style>
+</head>
+
+<body>
+<div class="overlay loader-none">
+    <div class="loader"></div>
+</div>
+    <nav class="navbar bg-body-tertiary shadow">
+        <div class="container">
+            <a class="navbar-brand" href="myTasks.html">
+                <img src="logo.png" alt="Logo" height="24" class="d-inline-block align-text-top">
+                 Task Management
+            </a>
+            <div>
+                <button class="profile btn btn-sm btn-dark"><i class="profile bi bi-person-circle"></i> Profile</button>
+                <button class="logout btn btn-sm btn-danger"><i class="bi bi-box-arrow-left"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="vh-100">
+            <div class="container py-5 h-100">
+                <div class="row d-flex justify-content-center align-items-center h-100">
+                    <div class="col">
+                        <div class="card" id="list1" style="border-radius: .75rem; background-color: #eff1f2;">
+                            <div class="card-body py-4 px-4 px-md-5">
+                                <p class="h1 text-center mt-3 mb-4 pb-3 text-primary">
+                                    <i class="fas fa-check-square me-1"></i>
+                                    <u>My Todo-s</u>
+                                </p>
+                                <div class="pb-2">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex flex-row align-items-center mb-3">
+                                                <input type="text" class="form-control form-control-lg mr-2"
+                                                       id="newCategoryInput" placeholder="Add new category...">
+                                                <button type="button" class="btn btn-secondary" id="addCategoryButton">Add
+                                                    Category</button>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center">
+                                                <input type="text" class="form-control form-control-lg mr-2" id="newTaskInput"
+                                                       placeholder="Add new task...">
+                                                <select class="form-control form-control-lg mr-2" id="categorySelect">
+                                                    <option value="">Select Category</option>
+                                                </select>
+                                                <button type="button" class="btn btn-primary" id="addTaskButton">Add
+                                                    Task</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ul class="list-group mt-4" id="categoryList"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+                </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const profile=document.querySelector(".profile");
+        profile.onclick=showProfile;
+        function showProfile(){
+            location.href="profile.html";
+        }
+        const logoutBtn=document.querySelector(".logout");
+        logoutBtn.onclick=async function (e) {
+            const overlay = document.querySelector(".overlay");
+            overlay.classList.remove("loader-none");
+            try {
+                const response = await axios.post("http://localhost:8080/api/user/logout", {}, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    withCredentials: true //
+                });
+                if (response.status === 200) {
+                    Swal.fire({
+                        title: "User Logout Successfully!",
+                        text: response.data,
+                        icon: "success"
+                    }).then(() => {
+                        location.href = "login.html";
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Logout Failed",
+                        text: response.data,
+                        icon: "error"
+                    });
+                }
+            } catch (error) {
+                let errorMessage = 'An error occurred. Please try again.';
+                if (error.response) {
+                    if (error.response.data) {
+                        errorMessage = error.response.data;
+                    }
+                } else if (error.request) {
+                    errorMessage = 'No response from server. Please check your network connection.';
+                } else {
+                    errorMessage = error.message;
+                }
+                document.getElementById('error-message').innerText = errorMessage;
+            }finally {
+                console.log("Finally block executed");
+                overlay.classList.add("loader-none");
+            }
+
+        };
+        async function getCategory(){
+            const overlay = document.querySelector(".overlay");
+            overlay.classList.remove("loader-none");
+            try {
+
+
+                const {data} = await axios.get("http://localhost:8080/api/task/categories");
+                let categorySelect = document.getElementById('categorySelect');
+                let categoryList = document.getElementById('categoryList');
+                data.map(category => {
+                    let newOption = document.createElement('option');
+                    newOption.value = category.categoryTask;
+                    newOption.textContent = category.categoryTask;
+                    categorySelect.appendChild(newOption);
+                    // Add category section
+                    let newCategory = document.createElement('li');
+                    newCategory.className = 'list-group-item category-item';
+                    newCategory.innerHTML = `<h5>${category.categoryTask}</h5><ul class="list-group task-list"></ul>`;
+                    const taskList = newCategory.querySelector('.task-list');
+                    category.subTasks.forEach(task => {
+                        let newTask = document.createElement('li');
+                        newTask.className = 'list-group-item  task-item';
+                        newTask.textContent = task.task;
+                        taskList.appendChild(newTask);
+                    });
+                    categoryList.appendChild(newCategory);
+                });
+            }catch (error){
+                console.error('Error fetching data:', error);
+            }finally {
+                console.log("Finally block executed");
+                overlay.classList.add("loader-none");
+            }
+        }
+    getCategory();
+
+         function addCategory(){
+
+            const addCategoryButton=document.getElementById("addCategoryButton");
+                addCategoryButton.onclick= async function(e){
+                    e.preventDefault();
+                    const categoryValue=document.getElementById("newCategoryInput").value;
+                    if (!categoryValue.trim()) {
+                        Swal.fire({
+                            title: "Category Not Successful!",
+                            text: "Category name cannot be empty!",
+                            icon: "error"
+                        });
+                        return;
+                    }
+                    const overlay = document.querySelector(".overlay");
+                    overlay.classList.remove("loader-none");
+                    try {
+                        const response = await axios.post("http://localhost:8080/api/task/addCategory", { category: categoryValue });
+
+                        if (response.status === 200) {
+                            let categorySelect = document.getElementById('categorySelect');
+                            let categoryList = document.getElementById('categoryList');
+
+                            // Create new option for the select dropdown
+                            let newOption = document.createElement('option');
+                            newOption.value = categoryValue;
+                            newOption.textContent = categoryValue;
+                            categorySelect.appendChild(newOption);
+
+                            // Create new list item for the category list
+                            let newCategory = document.createElement("li");
+                            newCategory.className = 'list-group-item  category-item';
+                            newCategory.innerHTML = `<h5>${categoryValue}</h5><ul class="list-group task-list"></ul>`;
+                            categoryList.appendChild(newCategory);
+                            Swal.fire({
+                                title: "Success",
+                                text: "Category added successfully!",
+                                icon: "success"
+                            });
+                        } else {
+                            Swal.fire({
+                                title: "Failed to add category",
+                                text: response.data,
+                                icon: "error"
+                            });
+                        }
+                    } catch (error) {
+                        console.error("There was an error adding the category!", error);
+                        Swal.fire({
+                            title: "Error",
+                            text: "Error adding category: " + (error.response ? error.response.data : error.message),
+                            icon: "error"
+                        });
+                    }finally {
+                        console.log("Finally block executed");
+                        overlay.classList.add("loader-none");
+                    }
+            }
+        }
+        addCategory();
+         function addTask(){
+             const addTaskButton=document.getElementById("addTaskButton");
+             addTaskButton.onclick=async function (e){
+                 e.preventDefault();
+                 const taskValue=document.getElementById("newTaskInput").value;
+                const selectedCategory  = document.getElementById('categorySelect').value;
+                 if (!taskValue.trim()) {
+                     Swal.fire({
+                         title: "Task Not Successful!",
+                         text: "Task name cannot be empty!",
+                         icon: "error"
+                     });
+                     return;
+                 }
+                 if (!selectedCategory.trim()) {
+                     Swal.fire({
+                         title: "Task Not Successful!",
+                         text: "Please select a category!",
+                         icon: "error"
+                     });
+                     return;
+                 }
+                 const TaskDto={
+                     categoryName:selectedCategory,
+                     task:taskValue
+                 };
+                 const overlay = document.querySelector(".overlay");
+                 overlay.classList.remove("loader-none");
+                 try {
+                     const response = await axios.post("http://localhost:8080/api/task/addtask",TaskDto);
+                     if (response.status === 200){
+                         const categoryListItems = document.querySelectorAll('#categoryList .list-group-item');
+                         let categoryFound = false;
+                         Array.from(categoryListItems).forEach(categoryItem =>{
+                             console.log("Category Item:", categoryItem);
+                             const categoryHeader = categoryItem.querySelector('h5');
+                             if (categoryHeader&& categoryHeader.textContent === selectedCategory ) {
+                                 const taskList = categoryItem.querySelector('.task-list');
+                                 const newTask = document.createElement('li');
+                                 newTask.className = 'list-group-item task-item';
+                                 newTask.textContent = taskValue;
+                                 taskList.appendChild(newTask);
+                                 categoryFound = true;
+                             }
+                         });
+                         if (!categoryFound) {
+                             Swal.fire({
+                                 title: "Error",
+                                 text: "Selected category not found",
+                                 icon: "error"
+                             });
+                         } else {
+                             Swal.fire({
+                                 title: "Success",
+                                 text: "Task added successfully!",
+                                 icon: "success"
+                             });
+                         }
+                     } else {
+                         Swal.fire({
+                             title: "Failed to add task",
+                             text: response.data,
+                             icon: "error"
+                         });
+                     }
+                 } catch (error) {
+                     console.error("There was an error adding the task!", error);
+                     Swal.fire({
+                         title: "Error",
+                         text: "Error adding task: " + (error.response ? error.response.data : error.message),
+                         icon: "error"
+                     });
+                 } finally {
+                     console.log("Finally block executed");
+                     overlay.classList.add("loader-none");
+                 }
+             }
+         }
+addTask();
+    </script>
+</body>
+
+</html>
